@@ -26,7 +26,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 # Load dataset
-file_path = "bank_data.csv"  # Ensure this CSV is available in your environment
+file_path = "Comprehensive_Banking_Database_ main.csv"  # Ensure this CSV is available in your environment
 df = pd.read_csv(file_path)
 df.columns = df.columns.str.strip().str.replace(' ', '_').str.replace('/', '_')
 
