@@ -44,7 +44,7 @@ if section == "Customer Demographics & Overview":
 
     # KPI Cards
     col1, col2, col3, col4, col5 = st.columns(5)
-    col1.metric("Count of Customers", f"{df['Customer_ID'].nunique()/1000:.1f}K")
+    col1.metric("Count of Customers", f"{df['CustomerID'].nunique()/1000:.1f}K")
     col2.metric("Avg of Customers Age", f"{df['Age'].mean():.2f}")
     col3.metric("Male Customers Count", f"{(df['Gender']=='Male').sum()/1000:.2f}K")
     col4.metric("Female Customers Count", f"{(df['Gender']=='Female').sum()/1000:.2f}K")
@@ -77,10 +77,10 @@ elif section == "Accounts & Loan Analysis":
 
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Count of Accounts", f"{df['Account_ID'].nunique()/1000:.1f}K")
-    col2.metric("Total Loan Amount", f"{df['Loan_Amount'].sum()/1e6:.3f}M")
-    col3.metric("Total Account Balance", f"{df['Account_Balance'].sum()/1e6:.2f}M")
-    col4.metric("Average Interest Rate", f"{df['Interest_Rate'].mean():.2f}")
+    col1.metric("Count of Accounts", f"{df['CustomerID'].nunique()/1000:.1f}K")
+    col2.metric("Total Loan Amount", f"{df['LoanAmount'].sum()/1e6:.3f}M")
+    col3.metric("Total Account Balance", f"{df['AccountBalance'].sum()/1e6:.2f}M")
+    col4.metric("Average Interest Rate", f"{df['InterestRate'].mean():.2f}")
 
     # Line chart - Loans by Year
     df['Loan_Year'] = pd.to_datetime(df['Approval_Rejection_Date'], errors='coerce').dt.year
@@ -89,9 +89,10 @@ elif section == "Accounts & Loan Analysis":
     st.plotly_chart(fig4, use_container_width=True)
 
     # Bar chart - Loan Terms
-    loan_term_count = df['Loan_Term'].value_counts().sort_index().reset_index()
-    loan_term_count.columns = ['Loan_Term', 'Count']
-    fig5 = px.bar(loan_term_count, x='Loan_Term', y='Count', title="Loan Term wise Loans Count")
+    df['Loan_Year'] = pd.to_datetime(df['Approval/Rejection Date'], errors='coerce').dt.year
+    loan_term_count = df['LoanTerm'].value_counts().sort_index().reset_index()
+    loan_term_count.columns = ['LoanTerm', 'Count']
+    fig5 = px.bar(loan_term_count, x='LoanTerm', y='Count', title="Loan Term wise Loans Count")
     st.plotly_chart(fig5, use_container_width=True)
 
 # 3. Transaction & Financial Analysis
@@ -100,21 +101,21 @@ elif section == "Transaction & Financial Analysis":
 
     # KPI Cards
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total Transaction Amount", f"{df['Transaction_Amount'].sum()/1e6:.2f}M")
-    col2.metric("Avg Transaction Amount", f"{df['Transaction_Amount'].mean():.2f}")
+    col1.metric("Total Transaction Amount", f"{df['TransactionAmount'].sum()/1e6:.2f}M")
+    col2.metric("Avg Transaction Amount", f"{df['TransactionAmount'].mean():.2f}")
     col3.metric("No of Transactions", f"{df['TransactionID'].nunique():,}")
 
     # Monthly Trends
-    df['Month'] = pd.to_datetime(df['Transaction_Date'], errors='coerce').dt.month_name()
+    df['Month'] = pd.to_datetime(df['TransactionDate'], errors='coerce').dt.month_name()
     txn_month = df['Month'].value_counts().sort_index().reset_index()
     txn_month.columns = ['Month', 'Count']
     fig6 = px.line(txn_month, x='Month', y='Count', markers=True, title="Timely Trend of Transactions")
     st.plotly_chart(fig6, use_container_width=True)
 
     # Transaction Type
-    txn_type_count = df['Transaction_Type'].value_counts().reset_index()
-    txn_type_count.columns = ['Transaction_Type', 'Count']
-    fig7 = px.bar(txn_type_count, x='Transaction_Type', y='Count', title="Loan Term wise Loans Count")
+    txn_type_count = df['TransactionType'].value_counts().reset_index()
+    txn_type_count.columns = ['TransactionType', 'Count']
+    fig7 = px.bar(txn_type_count, x='TransactionType', y='Count', title="Loan Term wise Loans Count")
     st.plotly_chart(fig7, use_container_width=True)
 
 # 4. Credit Card Analysis
@@ -124,21 +125,21 @@ elif section == "Credit Card Analysis":
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Count of CardID", f"{df['CardID'].nunique()}")
-    col2.metric("Total Credit Card Balance", f"{df['Credit_Card_Balance'].sum()/1e6:.2f}M")
-    col3.metric("Total Minimum Payment Due", f"{df['Minimum_Payment_Due'].sum()/1e3:.2f}K")
-    col4.metric("Total Rewards Points", f"{df['Rewards_Points'].sum()/1e6:.2f}M")
+    col2.metric("Total Credit Card Balance", f"{df['CreditCardBalance'].sum()/1e6:.2f}M")
+    col3.metric("Total Minimum Payment Due", f"{df['MinimumPaymentDue'].sum()/1e3:.2f}K")
+    col4.metric("Total Rewards Points", f"{df['RewardsPoints'].sum()/1e6:.2f}M")
 
     # Bar Chart - Monthly Payments
-    df['Payment_Month'] = pd.to_datetime(df['Last_Credit_Card_Payment_Date'], errors='coerce').dt.month_name()
-    min_payment = df.groupby('Payment_Month')['Minimum_Payment_Due'].sum().reset_index()
-    fig8 = px.bar(min_payment, x='Payment_Month', y='Minimum_Payment_Due', title="Monthly Minimum Payment Due")
+    df['Payment_Month'] = pd.to_datetime(df['LastCreditCardPaymentDate'], errors='coerce').dt.month_name()
+    min_payment = df.groupby('Payment_Month')['MinimumPaymentDue'].sum().reset_index()
+    fig8 = px.bar(min_payment, x='Payment_Month', y='MinimumPaymentDue', title="Monthly Minimum Payment Due")
     st.plotly_chart(fig8, use_container_width=True)
 
     # Combo Chart
     monthly_balance = df.groupby('Payment_Month').agg({
-        'Credit_Card_Balance': 'sum',
-        'Credit_Limit': 'sum'
+        'CreditCardBalance': 'sum',
+        'CreditLimit': 'sum'
     }).reset_index()
-    fig9 = px.bar(monthly_balance, x='Payment_Month', y='Credit_Card_Balance', title="Credit Card Balance vs Limit")
-    fig9.add_scatter(x=monthly_balance['Payment_Month'], y=monthly_balance['Credit_Limit'], mode='lines+markers', name='Credit Limit')
+    fig9 = px.bar(monthly_balance, x='Payment_Month', y='CreditCardBalance', title="Credit Card Balance vs Limit")
+    fig9.add_scatter(x=monthly_balance['Payment_Month'], y=monthly_balance['CreditLimit'], mode='lines+markers', name='Credit Limit')
     st.plotly_chart(fig9, use_container_width=True)
