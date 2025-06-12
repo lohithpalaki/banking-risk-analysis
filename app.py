@@ -54,7 +54,13 @@ if section == "Customer Demographics & Overview":
     # Pie chart - Gender
     gender_dist = df['Gender'].value_counts().reset_index()
     gender_dist.columns = ['Gender', 'count']  # Rename correctly
-    fig1 = px.pie(gender_dist, names='Gender', values='count', title="Gender Distribution")
+    fig1 = px.pie(
+    gender_dist, 
+    names='Gender', 
+    values='count', 
+    title="Gender Distribution",
+    hole=0.4)
+    fig1.update_traces(textposition='inside', textinfo='label+percent+value')
     st.plotly_chart(fig1, use_container_width=True)
 
     # Age Group
@@ -62,15 +68,26 @@ if section == "Customer Demographics & Overview":
     labels = ['18-30', '31-40', '41-50', '51-60', '61-70']
     df['Age_Group'] = pd.cut(df['Age'], bins=bins, labels=labels, right=False)
     age_group_counts = df['Age_Group'].value_counts().sort_index()
-    fig2 = px.bar(x=age_group_counts.index, y=age_group_counts.values,
-                  labels={'x': 'Age Group', 'y': 'Count of Customers'},
-                  title="Age Group wise Number of Customers")
+    fig2 = px.bar(
+    x=age_group_counts.index, 
+    y=age_group_counts.values,
+    labels={'x': 'Age Group', 'y': 'Count of Customers'},
+    title="Age Group wise Number of Customers",
+    text=age_group_counts.values)
+    fig2.update_traces(textposition='outside', textfont_size=12)
     st.plotly_chart(fig2, use_container_width=True)
 
     # City-wise bar chart
     city_count = df['City'].value_counts().head(20).reset_index()
     city_count.columns = ['City', 'Count']
-    fig3 = px.bar(city_count, x='Count', y='City', orientation='h', title="Count of Customers by City")
+    fig3 = px.bar(
+    city_count, 
+    x='Count', 
+    y='City', 
+    orientation='h', 
+    title="Count of Customers by City",
+    text='Count')
+    fig3.update_traces(textposition='outside', textfont_size=12)
     st.plotly_chart(fig3, use_container_width=True)
 
 # 2. Accounts & Loan Analysis
