@@ -78,7 +78,7 @@ if section == "Customer Demographics & Overview":
     st.plotly_chart(fig2, use_container_width=True)
 
     # City-wise bar chart
-    city_count = df['City'].value_counts().head(20).reset_index()
+    city_count = df['City'].value_counts().reset_index()
     city_count.columns = ['City', 'Count']
     fig3 = px.bar(
     city_count, 
@@ -86,7 +86,8 @@ if section == "Customer Demographics & Overview":
     y='City', 
     orientation='h', 
     title="Count of Customers by City",
-    text='Count')
+    text='Count',
+    height=900 )
     fig3.update_traces(textposition='outside', textfont_size=12)
     st.plotly_chart(fig3, use_container_width=True)
 
