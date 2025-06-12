@@ -53,7 +53,8 @@ if section == "Customer Demographics & Overview":
 
     # Pie chart - Gender
     gender_dist = df['Gender'].value_counts().reset_index()
-    fig1 = px.pie(gender_dist, names='index', values='Gender', title="Gender Distribution")
+    gender_dist.columns = ['Gender', 'count']  # Rename correctly
+    fig1 = px.pie(gender_dist, names='Gender', values='count', title="Gender Distribution")
     st.plotly_chart(fig1, use_container_width=True)
 
     # Age Group
