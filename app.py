@@ -59,7 +59,7 @@ if section == "Customer Demographics & Overview":
 
     # Age Group
     bins = [0, 30, 40, 50, 60, 70, 100]
-    labels = ['0-30', '31-40', '41-50', '51-60', '61-70', '71+']
+    labels = ['18-30', '31-40', '41-50', '51-60', '61-70']
     df['Age_Group'] = pd.cut(df['Age'], bins=bins, labels=labels, right=False)
     age_group_counts = df['Age_Group'].value_counts().sort_index()
     fig2 = px.bar(x=age_group_counts.index, y=age_group_counts.values,
@@ -108,15 +108,26 @@ elif section == "Transaction & Financial Analysis":
 
     # Monthly Trends
     df['Month'] = pd.to_datetime(df['Transaction_Date'], errors='coerce').dt.month_name()
+    df['Month'] = pd.Categorical(df['Month'], categories=[
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ], ordered=True)
+
     txn_month = df['Month'].value_counts().sort_index().reset_index()
     txn_month.columns = ['Month', 'Count']
-    fig6 = px.line(txn_month, x='Month', y='Count', markers=True, title="Timely Trend of Transactions")
+
+    fig6 = px.line(txn_month, x='Month', y='Count', text='Count_of_Transactions', markers=True,
+                   title="Timely Trend of Transactions")
+    fig6.update_traces(textposition="top center", textfont_size=12)
     st.plotly_chart(fig6, use_container_width=True)
 
     # Transaction Type
     txn_type_count = df['Transaction_Type'].value_counts().reset_index()
     txn_type_count.columns = ['Transaction_Type', 'Count']
-    fig7 = px.bar(txn_type_count, x='Transaction_Type', y='Count', title="Loan Term wise Loans Count")
+
+    fig7 = px.bar(txn_type_count, x='Transaction_Type', y='No_of_Loans', text='Count',
+                  title="Transaction Type Count")
+    fig7.update_traces(textposition='outside', textfont_size=12)
     st.plotly_chart(fig7, use_container_width=True)
 
 # 4. Credit Card Analysis
