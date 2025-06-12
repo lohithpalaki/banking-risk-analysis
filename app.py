@@ -54,13 +54,7 @@ if section == "Customer Demographics & Overview":
     # Pie chart - Gender
     gender_dist = df['Gender'].value_counts().reset_index()
     gender_dist.columns = ['Gender', 'count']  # Rename correctly
-    fig1 = px.pie(
-    gender_dist, 
-    names='Gender', 
-    values='count', 
-    title="Gender Distribution",
-    hole=0.4)
-    fig1.update_traces(textposition='inside', textinfo='label+percent+value')
+    fig1 = px.pie(gender_dist, names='Gender', values='count', title="Gender Distribution")
     st.plotly_chart(fig1, use_container_width=True)
 
     # Age Group
@@ -160,31 +154,28 @@ elif section == "Credit Card Analysis":
     col4.metric("Total Rewards Points", f"{df['Rewards_Points'].sum()/1e6:.2f}M")
 
     # Bar Chart - Monthly Payments
-    # Convert to datetime and extract full month name
-    df['Payment_Month'] = pd.to_datetime(df['Last_Credit_Card_Payment_Date'], errors='coerce').dt.strftime('%B')
+    # Convert date column to datetime (with error handling)
+    df['Last_Credit_Card_Payment_Date'] = pd.to_datetime(df['Last_Credit_Card_Payment_Date'], errors='coerce')
     
-    # Set correct month order (so bar chart follows Jan → Dec)
+    # Drop rows with missing dates (or handle as needed)
+    df_valid = df.dropna(subset=['Last_Credit_Card_Payment_Date'])
+    
+    # Extract full month name
+    df_valid['Payment_Month'] = df_valid['Last_Credit_Card_Payment_Date'].dt.strftime('%B')
+    
+    # Define correct calendar month order
     month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                    'July', 'August', 'September', 'October', 'November', 'December']
     
-    # Group by month and aggregate
-    min_payment = df.groupby('Payment_Month')['Minimum_Payment_Due'].sum().reset_index()
+    # Group by Payment Month
+    min_payment = df_valid.groupby('Payment_Month')['Minimum_Payment_Due'].sum().reset_index()
     
-   # Convert Last Payment Date to month name
-    df['Payment_Month'] = pd.to_datetime(df['Last_Credit_Card_Payment_Date'], errors='coerce').dt.strftime('%B')
-    
-    # Define calendar month order
-    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
-                   'July', 'August', 'September', 'October', 'November', 'December']
-    
-    # Group data by month
-    min_payment = df.groupby('Payment_Month')['Minimum_Payment_Due'].sum().reset_index()
-    
-    # Ensure correct order using categorical sorting
+    # Enforce correct order for display
     min_payment['Payment_Month'] = pd.Categorical(min_payment['Payment_Month'], categories=month_order, ordered=True)
     min_payment = min_payment.sort_values('Payment_Month')
     
-    # Create Plotly bar chart with labels
+    # Plotly Bar Chart with Labels
+    import plotly.express as px
     fig8 = px.bar(
         min_payment,
         x='Payment_Month',
@@ -193,12 +184,13 @@ elif section == "Credit Card Analysis":
         text='Minimum_Payment_Due'
     )
     
-    # Customize data labels and layout
+    # Style data labels
     fig8.update_traces(
-        texttemplate='%{text:,.2f}',  # adds commas and 2 decimal places
+        texttemplate='%{text:,.2f}',
         textposition='outside',
         textfont_size=12
     )
+    
     fig8.update_layout(
         xaxis_title='Month',
         yaxis_title='Total Minimum Payment Due',
@@ -206,8 +198,11 @@ elif section == "Credit Card Analysis":
         height=500
     )
     
-    # Display in Streamlit
     st.plotly_chart(fig8, use_container_width=True)
+    
+    # OPTIONAL DEBUGGING: Show monthly totals
+    st.subheader("🔍 Monthly Totals (for verification)")
+    st.dataframe(min_payment)
 
     # Combo Chart
    # Step 1: Convert to month name
@@ -220,8 +215,7 @@ elif section == "Credit Card Analysis":
     # Step 3: Group by month
     monthly_balance = df.groupby('Payment_Month').agg({
         'Credit_Card_Balance': 'sum',
-        'Credit_Limit': 'sum'
-    }).reset_index()
+        'Credit_Limit': 'sum'}).reset_index()
     
     # Step 4: Ensure proper order
     monthly_balance['Payment_Month'] = pd.Categorical(monthly_balance['Payment_Month'], categories=month_order, ordered=True)
