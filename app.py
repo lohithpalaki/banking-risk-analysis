@@ -58,7 +58,7 @@ if section == "Customer Demographics & Overview":
     st.plotly_chart(fig1, use_container_width=True)
 
     # Age Group
-    bins = [0, 30, 40, 50, 60, 70, 100]
+    bins = [0, 30, 40, 50, 60, 70]
     labels = ['18-30', '31-40', '41-50', '51-60', '61-70']
     df['Age_Group'] = pd.cut(df['Age'], bins=bins, labels=labels, right=False)
     age_group_counts = df['Age_Group'].value_counts().sort_index()
