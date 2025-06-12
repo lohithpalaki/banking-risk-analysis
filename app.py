@@ -160,16 +160,102 @@ elif section == "Credit Card Analysis":
     col4.metric("Total Rewards Points", f"{df['Rewards_Points'].sum()/1e6:.2f}M")
 
     # Bar Chart - Monthly Payments
-    df['Payment_Month'] = pd.to_datetime(df['Last_Credit_Card_Payment_Date'], errors='coerce').dt.month_name()
+    # Convert to datetime and extract full month name
+    df['Payment_Month'] = pd.to_datetime(df['Last_Credit_Card_Payment_Date'], errors='coerce').dt.strftime('%B')
+    
+    # Set correct month order (so bar chart follows Jan → Dec)
+    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+    
+    # Group by month and aggregate
     min_payment = df.groupby('Payment_Month')['Minimum_Payment_Due'].sum().reset_index()
-    fig8 = px.bar(min_payment, x='Payment_Month', y='Minimum_Payment_Due', title="Monthly Minimum Payment Due")
+    
+   # Convert Last Payment Date to month name
+    df['Payment_Month'] = pd.to_datetime(df['Last_Credit_Card_Payment_Date'], errors='coerce').dt.strftime('%B')
+    
+    # Define calendar month order
+    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+    
+    # Group data by month
+    min_payment = df.groupby('Payment_Month')['Minimum_Payment_Due'].sum().reset_index()
+    
+    # Ensure correct order using categorical sorting
+    min_payment['Payment_Month'] = pd.Categorical(min_payment['Payment_Month'], categories=month_order, ordered=True)
+    min_payment = min_payment.sort_values('Payment_Month')
+    
+    # Create Plotly bar chart with labels
+    fig8 = px.bar(
+        min_payment,
+        x='Payment_Month',
+        y='Minimum_Payment_Due',
+        title="Monthly Minimum Payment Due",
+        text='Minimum_Payment_Due'
+    )
+    
+    # Customize data labels and layout
+    fig8.update_traces(
+        texttemplate='%{text:,.2f}',  # adds commas and 2 decimal places
+        textposition='outside',
+        textfont_size=12
+    )
+    fig8.update_layout(
+        xaxis_title='Month',
+        yaxis_title='Total Minimum Payment Due',
+        title_font_size=20,
+        height=500
+    )
+    
+    # Display in Streamlit
     st.plotly_chart(fig8, use_container_width=True)
 
     # Combo Chart
+   # Step 1: Convert to month name
+    df['Payment_Month'] = pd.to_datetime(df['Last_Credit_Card_Payment_Date'], errors='coerce').dt.strftime('%B')
+    
+    # Step 2: Month order for calendar sorting
+    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+    
+    # Step 3: Group by month
     monthly_balance = df.groupby('Payment_Month').agg({
         'Credit_Card_Balance': 'sum',
         'Credit_Limit': 'sum'
     }).reset_index()
-    fig9 = px.bar(monthly_balance, x='Payment_Month', y='Credit_Card_Balance', title="Credit Card Balance vs Limit")
-    fig9.add_scatter(x=monthly_balance['Payment_Month'], y=monthly_balance['Credit_Limit'], mode='lines+markers', name='Credit Limit')
+    
+    # Step 4: Ensure proper order
+    monthly_balance['Payment_Month'] = pd.Categorical(monthly_balance['Payment_Month'], categories=month_order, ordered=True)
+    monthly_balance = monthly_balance.sort_values('Payment_Month')
+    
+    # Step 5: Create chart
+    fig9 = px.bar(
+        monthly_balance,
+        x='Payment_Month',
+        y='Credit_Card_Balance',
+        text='Credit_Card_Balance',
+        title="Monthly Trend: Credit Card Balance vs Limit"
+    )
+    
+    # Step 6: Add line for Credit Limit
+    fig9.add_scatter(
+        x=monthly_balance['Payment_Month'],
+        y=monthly_balance['Credit_Limit'],
+        mode='lines+markers+text',
+        name='Credit Limit',
+        text=monthly_balance['Credit_Limit'],
+        textposition='top center'
+    )
+    
+    # Step 7: Format text and layout
+    fig9.update_traces(texttemplate='%{text:,.0f}', textfont_size=12)
+    fig9.update_layout(
+        xaxis_title='Month',
+        yaxis_title='Amount',
+        title_font_size=20,
+        legend_title_text='Metric',
+        height=500
+    )
+    
+    # Display chart
     st.plotly_chart(fig9, use_container_width=True)
+
