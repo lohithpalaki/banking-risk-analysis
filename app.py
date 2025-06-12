@@ -154,55 +154,54 @@ elif section == "Credit Card Analysis":
     col4.metric("Total Rewards Points", f"{df['Rewards_Points'].sum()/1e6:.2f}M")
 
     # Bar Chart - Monthly Payments
-    # Convert date column to datetime (with error handling)
+    # Convert to datetime safely
     df['Last_Credit_Card_Payment_Date'] = pd.to_datetime(df['Last_Credit_Card_Payment_Date'], errors='coerce')
     
-    # Drop rows with missing dates (or handle as needed)
-    df_valid = df.dropna(subset=['Last_Credit_Card_Payment_Date'])
+    # Extract proper month name
+    df['Payment_Month'] = df['Last_Credit_Card_Payment_Date'].dt.strftime('%B')
     
-    # Extract full month name
-    df_valid['Payment_Month'] = df_valid['Last_Credit_Card_Payment_Date'].dt.strftime('%B')
+    # Remove rows where month is missing (due to invalid dates)
+    df_valid = df.dropna(subset=['Payment_Month', 'Minimum_Payment_Due'])
     
-    # Define correct calendar month order
+    # Aggregate monthly totals
+    monthly_min_due = df_valid.groupby('Payment_Month', observed=False)['Minimum_Payment_Due'].sum().reset_index()
+    
+    # Ensure calendar order
     month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                    'July', 'August', 'September', 'October', 'November', 'December']
+    monthly_min_due['Payment_Month'] = pd.Categorical(monthly_min_due['Payment_Month'], categories=month_order, ordered=True)
+    monthly_min_due = monthly_min_due.sort_values('Payment_Month')
     
-    # Group by Payment Month
-    min_payment = df_valid.groupby('Payment_Month')['Minimum_Payment_Due'].sum().reset_index()
-    
-    # Enforce correct order for display
-    min_payment['Payment_Month'] = pd.Categorical(min_payment['Payment_Month'], categories=month_order, ordered=True)
-    min_payment = min_payment.sort_values('Payment_Month')
-    
-    # Plotly Bar Chart with Labels
-    import plotly.express as px
-    fig8 = px.bar(
-        min_payment,
+    # Create the bar chart
+    fig = px.bar(
+        monthly_min_due,
         x='Payment_Month',
         y='Minimum_Payment_Due',
         title="Monthly Minimum Payment Due",
         text='Minimum_Payment_Due'
     )
     
-    # Style data labels
-    fig8.update_traces(
-        texttemplate='%{text:,.2f}',
+    # Format data labels and layout
+    fig.update_traces(
+        texttemplate='%{text:,.2f}',  # Comma separator, 2 decimals
         textposition='outside',
-        textfont_size=12
+        textfont_size=12,
+        marker_color='lightskyblue'
     )
     
-    fig8.update_layout(
+    fig.update_layout(
         xaxis_title='Month',
         yaxis_title='Total Minimum Payment Due',
         title_font_size=20,
-        height=500
+        height=500,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        xaxis_tickfont_size=13,
+        yaxis_tickfont_size=13
     )
     
-    st.plotly_chart(fig8, use_container_width=True)
-    
-    # OPTIONAL DEBUGGING: Show monthly totals
-    st.subheader("🔍 Monthly Totals (for verification)")
-    st.dataframe(min_payment)
+    # Render chart
+    st.plotly_chart(fig, use_container_width=True)
 
     # Combo Chart
    # Step 1: Convert to month name
