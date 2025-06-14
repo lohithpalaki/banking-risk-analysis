@@ -91,7 +91,7 @@ elif section == "Accounts & Loan Analysis":
 
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Count of Accounts", f"{df['Account_ID'].nunique()/1000:.1f}K")
+    col1.metric("Count of Accounts", f"{df['Customer_ID'].nunique()/1000:.1f}K")
     col2.metric("Total Loan Amount", f"{df['Loan_Amount'].sum()/1e6:.3f}M")
     col3.metric("Total Account Balance", f"{df['Account_Balance'].sum()/1e6:.2f}M")
     col4.metric("Average Interest Rate", f"{df['Interest_Rate'].mean():.2f}")
@@ -236,7 +236,7 @@ elif section == "Credit Card Analysis":
         mode='lines+markers+text',
         name='Credit Limit',
         text=monthly_balance['Credit_Limit'],
-        textposition='top center'
+        textposition='outside'
     )
     
     # Step 7: Format text and layout
