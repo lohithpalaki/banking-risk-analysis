@@ -141,18 +141,13 @@ elif section == "Transaction & Financial Analysis":
     col3.metric("No of Transactions", f"{df['TransactionID'].nunique():,}")
 
     # Monthly Trends
-    df['Month'] = pd.to_datetime(df['Transaction_Date'], errors='coerce').dt.month_name()
-    df['Month'] = pd.Categorical(df['Month'], categories=[
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ], ordered=True)
-
-    txn_month = df['Month'].value_counts().sort_index().reset_index()
-    txn_month.columns = ['Month', 'Count']
-
-    fig6 = px.line(txn_month, x='Month', y='Count', text='Count_of_Transactions', markers=True,
-                   title="Timely Trend of Transactions")
-    fig6.update_traces(textposition="top center", textfont_size=12)
+    fig6 = px.line(txn_month,x='Month',y='Count',text='Count',markers=True,title="Timely Trend of Transactions")
+    
+    fig6.update_traces(textposition='top center',texttemplate='%{text:.0f}',marker=dict(size=8))
+    
+    fig6.update_layout(xaxis_title='Month',yaxis_title='Number of Transactions',xaxis=dict(categoryorder='array', categoryarray=['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December']),height=500)
+    
     st.plotly_chart(fig6, use_container_width=True)
 
     # Transaction Type
