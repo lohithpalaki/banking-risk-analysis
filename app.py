@@ -96,22 +96,27 @@ elif section == "Accounts & Loan Analysis":
     col3.metric("Total Account Balance", f"{df['Account_Balance'].sum()/1e6:.2f}M")
     col4.metric("Average Interest Rate", f"{df['Interest_Rate'].mean():.2f}")
 
+
     # Line chart - Loans by Year
     df['Loan_Year'] = pd.to_datetime(df['Approval_Rejection_Date'], errors='coerce').dt.year
     loan_year_count = df.groupby('Loan_Year')['Loan_ID'].count().reset_index()
-    fig4 = px.line(loan_year_count, x='Loan_Year', y='Loan_ID', markers=True, title="Timely Count of Loans")
-    # Add labels outside the markers
-    fig4.update_traces(textposition='top center', texttemplate='%{text:.0f}', marker=dict(size=8))
-    fig4.update_layout(yaxis_title='Number of Loans', xaxis_title='Year')
+    
+    fig4 = px.line(loan_year_count,x='Loan_Year',y='Loan_ID',text='Loan_ID',markers=True,title="Timely Count of Loans")
+    
+    fig4.update_traces(textposition='top center',texttemplate='%{text:.0f}',marker=dict(size=8))
+    fig4.update_layout(yaxis_title='Number of Loans',xaxis_title='Year')
+    
     st.plotly_chart(fig4, use_container_width=True)
 
     # Bar chart - Loan Terms
     loan_term_count = df['Loan_Term'].value_counts().sort_index().reset_index()
     loan_term_count.columns = ['Loan_Term', 'Count']
-    fig5 = px.bar(loan_term_count, x='Loan_Term', y='Count', title="Loan Term wise Loans Count")
-    # Show text labels on bars
-    fig5.update_traces(textposition='outside', texttemplate='%{text:.0f}')
-    fig5.update_layout(yaxis_title='Number of Loans', xaxis_title='Loan Term (months)')
+    
+    fig5 = px.bar(loan_term_count,x='Loan_Term',y='Count',text='Count',title="Loan Term wise Loans Count")
+    
+    fig5.update_traces(textposition='outside',texttemplate='%{text:.0f}')
+    fig5.update_layout(yaxis_title='Number of Loans',xaxis_title='Loan Term (months)')
+    
     st.plotly_chart(fig5, use_container_width=True)
 
 # 3. Transaction & Financial Analysis
