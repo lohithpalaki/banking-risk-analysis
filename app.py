@@ -119,6 +119,17 @@ elif section == "Accounts & Loan Analysis":
     fig.update_layout(yaxis_title='Number of Loans',xaxis_title='Year',xaxis=dict(dtick=1))
     
     st.plotly_chart(fig, use_container_width=True)
+
+    # Bar chart - Loan Terms
+    loan_term_count = df['Loan_Term'].value_counts().sort_index().reset_index()
+    loan_term_count.columns = ['Loan_Term', 'Count']
+    
+    fig5 = px.bar(loan_term_count, x='Loan_Term', y='Count',text='Count',title="Loan Term wise Loans Count")
+    
+    fig5.update_traces(textposition='outside',texttemplate='%{text:.0f}')
+    fig5.update_layout(yaxis_title='Number of Loans',xaxis_title='Loan Term (months)')
+    
+    st.plotly_chart(fig5, use_container_width=True)
 # 3. Transaction & Financial Analysis
 elif section == "Transaction & Financial Analysis":
     st.title("💸 Transaction & Financial Analysis")
