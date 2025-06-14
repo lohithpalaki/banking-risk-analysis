@@ -140,23 +140,38 @@ elif section == "Transaction & Financial Analysis":
     col2.metric("Avg Transaction Amount", f"{df['Transaction_Amount'].mean():.2f}")
     col3.metric("No of Transactions", f"{df['TransactionID'].nunique():,}")
 
-    # Monthly Trends
+    # Extract Month from Transaction_Date
+    df['Month'] = pd.to_datetime(df['Transaction_Date'], errors='coerce').dt.strftime('%B')
+
+    # Define calendar month order
+    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+
+    # Group transactions by month
+    txn_month = df.groupby('Month')['TransactionID'].nunique().reset_index()
+    txn_month.columns = ['Month', 'Count']
+    txn_month['Month'] = pd.Categorical(txn_month['Month'], categories=month_order, ordered=True)
+    txn_month = txn_month.sort_values('Month')
+
+    # 📈 Line Chart: Monthly Transaction Trends
     fig6 = px.line(txn_month,x='Month',y='Count',text='Count',markers=True,title="Timely Trend of Transactions")
-    
-    fig6.update_traces(textposition='top center',texttemplate='%{text:.0f}',marker=dict(size=8))
-    
-    fig6.update_layout(xaxis_title='Month',yaxis_title='Number of Transactions',xaxis=dict(categoryorder='array', categoryarray=['January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December']),height=500)
-    
+
+    fig6.update_traces(textposition='top center',texttemplate='%{text:,}',marker=dict(size=8))
+
+    fig6.update_layout(xaxis_title='Month',yaxis_title='Number of Transactions',height=500)
+
     st.plotly_chart(fig6, use_container_width=True)
 
-    # Transaction Type
+    # 📊 Bar Chart: Transaction Type Count
     txn_type_count = df['Transaction_Type'].value_counts().reset_index()
     txn_type_count.columns = ['Transaction_Type', 'Count']
 
-    fig7 = px.bar(txn_type_count, x='Transaction_Type', y='No_of_Loans', text='Count',
-                  title="Transaction Type Count")
-    fig7.update_traces(textposition='outside', textfont_size=12)
+    fig7 = px.bar(txn_type_count,x='Transaction_Type',y='Count',text='Count',title="Transaction Type Count")
+
+    fig7.update_traces(textposition='outside',texttemplate='%{text:,}',textfont_size=12)
+
+    fig7.update_layout(xaxis_title='Transaction Type',yaxis_title='Count',height=500)
+
     st.plotly_chart(fig7, use_container_width=True)
 
 # 4. Credit Card Analysis
