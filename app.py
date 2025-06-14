@@ -235,52 +235,35 @@ elif section == "Credit Card Analysis":
     # Render chart
     st.plotly_chart(fig, use_container_width=True)
 
-    # Combo Chart
-   # Step 1: Convert to month name
+    # Combo Chart: Monthly Credit Card Balance vs Limit
+    st.subheader("📊 Monthly Trend: Credit Card Balance vs Limit")
+    
+    # Step 1: Convert Last Credit Card Payment Date to Month
     df['Payment_Month'] = pd.to_datetime(df['Last_Credit_Card_Payment_Date'], errors='coerce').dt.strftime('%B')
     
-    # Step 2: Month order for calendar sorting
+    # Step 2: Set calendar month order
     month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                    'July', 'August', 'September', 'October', 'November', 'December']
     
     # Step 3: Group by month
-    monthly_balance = df.groupby('Payment_Month').agg({
-        'Credit_Card_Balance': 'sum',
-        'Credit_Limit': 'sum'}).reset_index()
+    monthly_balance = df.groupby('Payment_Month').agg({'Credit_Card_Balance': 'sum','Credit_Limit': 'sum'}).reset_index()
     
-    # Step 4: Ensure proper order
-    monthly_balance['Payment_Month'] = pd.Categorical(monthly_balance['Payment_Month'], categories=month_order, ordered=True)
+    # Step 4: Sort months properly
+    monthly_balance['Payment_Month'] = pd.Categorical(monthly_balance['Payment_Month'],categories=month_order,ordered=True)
     monthly_balance = monthly_balance.sort_values('Payment_Month')
     
-    # Step 5: Create chart
-    fig9 = px.bar(
-        monthly_balance,
-        x='Payment_Month',
-        y='Credit_Card_Balance',
-        text='Credit_Card_Balance',
-        title="Monthly Trend: Credit Card Balance vs Limit"
-    )
+    # Step 5: Bar chart for Credit Card Balance
+    fig9 = px.bar(monthly_balance,x='Payment_Month',y='Credit_Card_Balance',text='Credit_Card_Balance',title="Monthly Credit Card Balance vs Credit Limit")
     
-    # Step 6: Add line for Credit Limit
-    fig9.add_scatter(
-        x=monthly_balance['Payment_Month'],
-        y=monthly_balance['Credit_Limit'],
-        mode='lines+markers+text',
-        name='Credit Limit',
-        text=monthly_balance['Credit_Limit'],
-        textposition='outside'
-    )
+    fig9.update_traces(texttemplate='%{text:,.0f}',textposition='outside',textfont_size=12,name='Credit Card Balance')
     
-    # Step 7: Format text and layout
-    fig9.update_traces(texttemplate='%{text:,.0f}', textfont_size=12)
-    fig9.update_layout(
-        xaxis_title='Month',
-        yaxis_title='Amount',
-        title_font_size=20,
-        legend_title_text='Metric',
-        height=500
-    )
+    # Step 6: Add Credit Limit line chart
+    fig9.add_scatter(x=monthly_balance['Payment_Month'],y=monthly_balance['Credit_Limit'],mode='lines+markers+text',name='Credit Limit',
+        text=monthly_balance['Credit_Limit'],textposition='top center',texttemplate='%{text:,.0f}')
     
-    # Display chart
+    # Step 7: Layout styling
+    fig9.update_layout(xaxis_title='Month',yaxis_title='Amount (₹)',title_font_size=20,legend_title_text='Metric',height=550)
+    
+    # Step 8: Show chart
     st.plotly_chart(fig9, use_container_width=True)
 
