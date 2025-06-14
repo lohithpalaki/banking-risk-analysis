@@ -97,41 +97,27 @@ elif section == "Accounts & Loan Analysis":
     col4.metric("Average Interest Rate", f"{df['Interest_Rate'].mean():.2f}")
 
 
-    # Convert Approval date to year
-    df['Loan_Year'] = pd.to_datetime(df['Approval_Rejection_Date'], errors='coerce').dt.year
+    # Line chart - Loans by Year
+    # Ensure date column is parsed
+    df['Approval_Rejection_Date'] = pd.to_datetime(df['Approval_Rejection_Date'], errors='coerce')
     
-    # Group by year and count loans
-    loan_year_count = df.groupby('Loan_Year')['Loan_ID'].count().reset_index()
+    # Filter out rows with missing dates
+    filtered_df = df[df['Approval_Rejection_Date'].notna()]
     
-    # Convert year to string to avoid floating-point x-axis
-    loan_year_count['Loan_Year'] = loan_year_count['Loan_Year'].astype(str)
+    # Extract year
+    filtered_df['Loan_Year'] = filtered_df['Approval_Rejection_Date'].dt.year
     
-    # Line plot with markers and data labels
-    fig4 = px.line(
-        loan_year_count,
-        x='Loan_Year',
-        y='Loan_ID',
-        text='Loan_ID',
-        markers=True,
-        title="Timely Count of Loans"
-    )
+    # Count loans per year
+    loan_year_count = filtered_df.groupby('Loan_Year')['Loan_ID'].count().reset_index()
     
-    # Data label settings
-    fig4.update_traces(
-        textposition='top center',
-        texttemplate='%{text:.0f}',  # Integer labels
-        marker=dict(size=8)
-    )
+    # Plot
+    fig = px.line(loan_year_count,x='Loan_Year',y='Loan_ID',text='Loan_ID',markers=True,title="Timely Count of Loans"    )
     
-    # Layout tweaks
-    fig4.update_layout(
-        yaxis_title='Number of Loans',
-        xaxis_title='Year',
-        xaxis=dict(type='category')  # Force categorical x-axis
-    )
+    fig.update_traces(textposition='top center', texttemplate='%{text:.0f}', marker=dict(size=8))
+    fig.update_layout(yaxis_title='Number of Loans', xaxis_title='Year', xaxis=dict(dtick=1))
     
-    # Show chart
-    st.plotly_chart(fig4, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
+
 
     # Bar chart - Loan Terms
     loan_term_count = df['Loan_Term'].value_counts().sort_index().reset_index()
