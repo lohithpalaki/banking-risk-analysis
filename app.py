@@ -98,11 +98,13 @@ elif section == "Accounts & Loan Analysis":
 
 
     # Line chart - Loans by Year
-    # Ensure date column is parsed
-    df['Approval_Rejection_Date'] = pd.to_datetime(df['Approval_Rejection_Date'], errors='coerce')
     
-    # Filter out rows with missing dates
+    df['Approval_Rejection_Date'] = pd.to_datetime(df['Approval_Rejection_Date'], errors='coerce')
+
+    # Filter valid rows
     filtered_df = df[df['Approval_Rejection_Date'].notna()]
+    filtered_df = filtered_df[filtered_df['Loan_ID'].notna()]  # Ensure Loan_ID exists
+    filtered_df = filtered_df.drop_duplicates(subset='Loan_ID')  # Remove duplicates
     
     # Extract year
     filtered_df['Loan_Year'] = filtered_df['Approval_Rejection_Date'].dt.year
@@ -111,25 +113,12 @@ elif section == "Accounts & Loan Analysis":
     loan_year_count = filtered_df.groupby('Loan_Year')['Loan_ID'].count().reset_index()
     
     # Plot
-    fig = px.line(loan_year_count,x='Loan_Year',y='Loan_ID',text='Loan_ID',markers=True,title="Timely Count of Loans"    )
+    fig = px.line(loan_year_count,x='Loan_Year',y='Loan_ID',text='Loan_ID',markers=True,title="Timely Count of Loans")
     
-    fig.update_traces(textposition='top center', texttemplate='%{text:.0f}', marker=dict(size=8))
-    fig.update_layout(yaxis_title='Number of Loans', xaxis_title='Year', xaxis=dict(dtick=1))
+    fig.update_traces(textposition='top center',texttemplate='%{text:.0f}',marker=dict(size=8))
+    fig.update_layout(yaxis_title='Number of Loans',xaxis_title='Year',xaxis=dict(dtick=1))
     
     st.plotly_chart(fig, use_container_width=True)
-
-
-    # Bar chart - Loan Terms
-    loan_term_count = df['Loan_Term'].value_counts().sort_index().reset_index()
-    loan_term_count.columns = ['Loan_Term', 'Count']
-    
-    fig5 = px.bar(loan_term_count,x='Loan_Term',y='Count',text='Count',title="Loan Term wise Loans Count")
-    
-    fig5.update_traces(textposition='outside',texttemplate='%{text:.0f}')
-    fig5.update_layout(yaxis_title='Number of Loans',xaxis_title='Loan Term (months)')
-    
-    st.plotly_chart(fig5, use_container_width=True)
-
 # 3. Transaction & Financial Analysis
 elif section == "Transaction & Financial Analysis":
     st.title("💸 Transaction & Financial Analysis")
