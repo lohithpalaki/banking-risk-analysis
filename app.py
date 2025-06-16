@@ -28,7 +28,7 @@ if not st.session_state.logged_in:
 # Load dataset
 file_path = "Comprehensive_Banking_Database_ main.csv"  # Ensure this CSV is available in your environment
 df = pd.read_csv(file_path)
-df.columns = df.columns.str.strip().str.replace(' ', '').str.replace('/', '')
+df.columns = df.columns.str.strip().str.replace(' ', '_').str.replace('/', '_')
 
 # Sidebar Navigation
 st.sidebar.title("Navigation")
