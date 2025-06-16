@@ -66,9 +66,8 @@ if section == "Customer Demographics & Overview":
     x=age_group_counts.index, 
     y=age_group_counts.values,
     labels={'x': 'Age Group', 'y': 'Count of Customers'},
-    title="Age Group wise Number of Customers",
-    text=age_group_counts.values)
-    fig2.update_traces(textposition='outside', textfont_size=12)
+    title="Age Group wise Number of Customers")
+    
     st.plotly_chart(fig2, use_container_width=True)
 
     # City-wise bar chart
@@ -80,9 +79,8 @@ if section == "Customer Demographics & Overview":
     y='City', 
     orientation='h', 
     title="Count of Customers by City",
-    text='Count',
     height=900 )
-    fig3.update_traces(textposition='outside', textfont_size=12)
+  
     st.plotly_chart(fig3, use_container_width=True)
 
 # 2. Accounts & Loan Analysis
@@ -113,9 +111,9 @@ elif section == "Accounts & Loan Analysis":
     loan_year_count = filtered_df.groupby('Loan_Year')['Loan_ID'].count().reset_index()
     
     # Plot
-    fig = px.line(loan_year_count,x='Loan_Year',y='Loan_ID',text='Loan_ID',markers=True,title="Timely Count of Loans")
+    fig = px.line(loan_year_count,x='Loan_Year',y='Loan_ID',markers=True,title="Timely Count of Loans")
     
-    fig.update_traces(textposition='top center',texttemplate='%{text:.0f}',marker=dict(size=8))
+    
     fig.update_layout(yaxis_title='Number of Loans',xaxis_title='Year',xaxis=dict(dtick=1))
     
     st.plotly_chart(fig, use_container_width=True)
@@ -124,9 +122,9 @@ elif section == "Accounts & Loan Analysis":
     loan_term_count = df['Loan_Term'].value_counts().sort_index().reset_index()
     loan_term_count.columns = ['Loan_Term', 'Count']
     
-    fig5 = px.bar(loan_term_count, x='Loan_Term', y='Count',text='Count',title="Loan Term wise Loans Count")
+    fig5 = px.bar(loan_term_count, x='Loan_Term', y='Count',title="Loan Term wise Loans Count")
     
-    fig5.update_traces(textposition='outside',texttemplate='%{text:.0f}')
+    
     fig5.update_layout(yaxis_title='Number of Loans',xaxis_title='Loan Term (months)')
     
     st.plotly_chart(fig5, use_container_width=True)
@@ -154,10 +152,9 @@ elif section == "Transaction & Financial Analysis":
     txn_month = txn_month.sort_values('Month')
 
     # 📈 Line Chart: Monthly Transaction Trends
-    fig6 = px.line(txn_month,x='Month',y='Count',text='Count',markers=True,title="Timely Trend of Transactions")
+    fig6 = px.line(txn_month,x='Month',y='Count',markers=True,title="Timely Trend of Transactions")
 
-    fig6.update_traces(textposition='top center',texttemplate='%{text:,}',marker=dict(size=8))
-
+    
     fig6.update_layout(xaxis_title='Month',yaxis_title='Number of Transactions',height=500)
 
     st.plotly_chart(fig6, use_container_width=True)
@@ -166,9 +163,9 @@ elif section == "Transaction & Financial Analysis":
     txn_type_count = df['Transaction_Type'].value_counts().reset_index()
     txn_type_count.columns = ['Transaction_Type', 'Count']
 
-    fig7 = px.bar(txn_type_count,x='Transaction_Type',y='Count',text='Count',title="Transaction Type Count")
+    fig7 = px.bar(txn_type_count,x='Transaction_Type',y='Count',title="Transaction Type Count")
 
-    fig7.update_traces(textposition='outside',texttemplate='%{text:,}',textfont_size=12)
+   
 
     fig7.update_layout(xaxis_title='Transaction Type',yaxis_title='Count',height=500)
 
