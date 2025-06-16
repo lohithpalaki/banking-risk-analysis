@@ -242,13 +242,12 @@ elif section == "Credit Card Analysis":
     monthly_balance = monthly_balance.sort_values('Payment_Month')
     
     # Step 5: Bar chart for Credit Card Balance
-    fig9 = px.bar(monthly_balance,x='Payment_Month',y='Credit_Card_Balance',text='Credit_Card_Balance',title="Monthly Credit Card Balance vs Credit Limit")
+    fig9 = px.bar(monthly_balance,x='Payment_Month',y='Credit_Card_Balance',title="Monthly Credit Card Balance vs Credit Limit")
     
    
     
     # Step 6: Add Credit Limit line chart
-    fig9.add_scatter(x=monthly_balance['Payment_Month'],y=monthly_balance['Credit_Limit'],mode='lines+markers+text',name='Credit Limit',
-        text=monthly_balance['Credit_Limit'],textposition='top center',texttemplate='%{text:,.0f}')
+    fig9.add_scatter(x=monthly_balance['Payment_Month'],y=monthly_balance['Credit_Limit'],mode='lines+markers+text',name='Credit Limit')
     
     # Step 7: Layout styling
     fig9.update_layout(xaxis_title='Month',yaxis_title='Amount (₹)',title_font_size=20,legend_title_text='Metric',height=550)
