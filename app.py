@@ -28,7 +28,7 @@ if not st.session_state.logged_in:
 # Load dataset
 file_path = "Comprehensive_Banking_Database_ main.csv"
 df = pd.read_csv(file_path)
-df.columns = df.columns.str.strip().str.replace(' ', '_').str.replace('/', '_')
+df.columns = df.columns.str.strip().str.replace(' ', '').str.replace('/', '')
 
 # Convert datetime columns
 if 'Approval_Rejection_Date' in df.columns:
@@ -105,5 +105,186 @@ if section == "Customer Demographics & Overview":
     fig3 = px.bar(city_count, x='Count', y='City', orientation='h', title="Count of Customers by City", text='Count', height=900)
     fig3.update_traces(textposition='outside', textfont_size=12)
     st.plotly_chart(fig3, use_container_width=True)
+    
+# 2. Accounts & Loan Analysis
+elif section == "Accounts & Loan Analysis":
+    st.title("💳 Accounts & Loan Analysis")
 
-# Do similar replacement for all other sections: use filtered_df instead of df.
+    # KPI Cards
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Count of Accounts", f"{filtered_df['Customer_ID'].nunique()/1000:.1f}K")
+    col2.metric("Total Loan Amount", f"{filtered_df['Loan_Amount'].sum()/1e6:.3f}M")
+    col3.metric("Total Account Balance", f"{filtered_df['Account_Balance'].sum()/1e6:.2f}M")
+    col4.metric("Average Interest Rate", f"{filtered_df['Interest_Rate'].mean():.2f}")
+
+
+    # Line chart - Loans by Year
+    
+    filtered_df['Approval_Rejection_Date'] = pd.to_datetime(filtered_df['Approval_Rejection_Date'], errors='coerce')
+
+    # Filter valid rows
+    filtered_filtered_df = filtered_df[filtered_df['Approval_Rejection_Date'].notna()]
+    filtered_filtered_df = filtered_filtered_df[filtered_filtered_df['Loan_ID'].notna()]  # Ensure Loan_ID exists
+    filtered_filtered_df = filtered_filtered_df.drop_duplicates(subset='Loan_ID')  # Remove duplicates
+    
+    # Extract year
+    filtered_filtered_df['Loan_Year'] = filtered_filtered_df['Approval_Rejection_Date'].dt.year
+    
+    # Count loans per year
+    loan_year_count = filtered_filtered_df.groupby('Loan_Year')['Loan_ID'].count().reset_index()
+    
+    # Plot
+    fig = px.line(loan_year_count,x='Loan_Year',y='Loan_ID',text='Loan_ID',markers=True,title="Timely Count of Loans")
+    
+    fig.update_traces(textposition='top center',texttemplate='%{text:.0f}',marker=dict(size=8))
+    fig.update_layout(yaxis_title='Number of Loans',xaxis_title='Year',xaxis=dict(dtick=1))
+    
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Bar chart - Loan Terms
+    loan_term_count = filtered_df['Loan_Term'].value_counts().sort_index().reset_index()
+    loan_term_count.columns = ['Loan_Term', 'Count']
+    
+    fig5 = px.bar(loan_term_count, x='Loan_Term', y='Count',text='Count',title="Loan Term wise Loans Count")
+    
+    fig5.update_traces(textposition='outside',texttemplate='%{text:.0f}')
+    fig5.update_layout(yaxis_title='Number of Loans',xaxis_title='Loan Term (months)')
+    
+    st.plotly_chart(fig5, use_container_width=True)
+# 3. Transaction & Financial Analysis
+elif section == "Transaction & Financial Analysis":
+    st.title("💸 Transaction & Financial Analysis")
+
+    # KPI Cards
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Transaction Amount", f"{filtered_df['Transaction_Amount'].sum()/1e6:.2f}M")
+    col2.metric("Avg Transaction Amount", f"{filtered_df['Transaction_Amount'].mean():.2f}")
+    col3.metric("No of Transactions", f"{filtered_df['TransactionID'].nunique():,}")
+
+    # Extract Month from Transaction_Date
+    filtered_df['Month'] = pd.to_datetime(filtered_df['Transaction_Date'], errors='coerce').dt.strftime('%B')
+
+    # Define calendar month order
+    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+
+    # Group transactions by month
+    txn_month = filtered_df.groupby('Month')['TransactionID'].nunique().reset_index()
+    txn_month.columns = ['Month', 'Count']
+    txn_month['Month'] = pd.Categorical(txn_month['Month'], categories=month_order, ordered=True)
+    txn_month = txn_month.sort_values('Month')
+
+    # 📈 Line Chart: Monthly Transaction Trends
+    fig6 = px.line(txn_month,x='Month',y='Count',text='Count',markers=True,title="Timely Trend of Transactions")
+
+    fig6.update_traces(textposition='top center',texttemplate='%{text:,}',marker=dict(size=8))
+
+    fig6.update_layout(xaxis_title='Month',yaxis_title='Number of Transactions',height=500)
+
+    st.plotly_chart(fig6, use_container_width=True)
+
+    # 📊 Bar Chart: Transaction Type Count
+    txn_type_count = filtered_df['Transaction_Type'].value_counts().reset_index()
+    txn_type_count.columns = ['Transaction_Type', 'Count']
+
+    fig7 = px.bar(txn_type_count,x='Transaction_Type',y='Count',text='Count',title="Transaction Type Count")
+
+    fig7.update_traces(textposition='outside',texttemplate='%{text:,}',textfont_size=12)
+
+    fig7.update_layout(xaxis_title='Transaction Type',yaxis_title='Count',height=500)
+
+    st.plotly_chart(fig7, use_container_width=True)
+
+# 4. Credit Card Analysis
+elif section == "Credit Card Analysis":
+    st.title("💳 Credit Card Analysis")
+
+    # KPI Cards
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Count of CardID", f"{filtered_df['CardID'].nunique()}")
+    col2.metric("Total Credit Card Balance", f"{filtered_df['Credit_Card_Balance'].sum()/1e6:.2f}M")
+    col3.metric("Total Minimum Payment Due", f"{filtered_df['Minimum_Payment_Due'].sum()/1e3:.2f}K")
+    col4.metric("Total Rewards Points", f"{filtered_df['Rewards_Points'].sum()/1e6:.2f}M")
+
+    # Bar Chart - Monthly Payments
+    # Convert to datetime safely
+    filtered_df['Last_Credit_Card_Payment_Date'] = pd.to_datetime(filtered_df['Last_Credit_Card_Payment_Date'], errors='coerce')
+    
+    # Extract proper month name
+    filtered_df['Payment_Month'] = filtered_df['Last_Credit_Card_Payment_Date'].dt.strftime('%B')
+    
+    # Remove rows where month is missing (due to invalid dates)
+    filtered_df_valid = filtered_df.dropna(subset=['Payment_Month', 'Minimum_Payment_Due'])
+    
+    # Aggregate monthly totals
+    monthly_min_due = filtered_df_valid.groupby('Payment_Month', observed=False)['Minimum_Payment_Due'].sum().reset_index()
+    
+    # Ensure calendar order
+    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+    monthly_min_due['Payment_Month'] = pd.Categorical(monthly_min_due['Payment_Month'], categories=month_order, ordered=True)
+    monthly_min_due = monthly_min_due.sort_values('Payment_Month')
+    
+    # Create the bar chart
+    fig = px.bar(
+        monthly_min_due,
+        x='Payment_Month',
+        y='Minimum_Payment_Due',
+        title="Monthly Minimum Payment Due",
+        text='Minimum_Payment_Due'
+    )
+    
+    # Format data labels and layout
+    fig.update_traces(
+        texttemplate='%{text:,.2f}',  # Comma separator, 2 decimals
+        textposition='outside',
+        textfont_size=12,
+        marker_color='lightskyblue'
+    )
+    
+    fig.update_layout(
+        xaxis_title='Month',
+        yaxis_title='Total Minimum Payment Due',
+        title_font_size=20,
+        height=500,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        xaxis_tickfont_size=13,
+        yaxis_tickfont_size=13
+    )
+    
+    # Render chart
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Combo Chart: Monthly Credit Card Balance vs Limit
+    st.subheader("📊 Monthly Trend: Credit Card Balance vs Limit")
+    
+    # Step 1: Convert Last Credit Card Payment Date to Month
+    filtered_df['Payment_Month'] = pd.to_datetime(filtered_df['Last_Credit_Card_Payment_Date'], errors='coerce').dt.strftime('%B')
+    
+    # Step 2: Set calendar month order
+    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+    
+    # Step 3: Group by month
+    monthly_balance = filtered_df.groupby('Payment_Month').agg({'Credit_Card_Balance': 'sum','Credit_Limit': 'sum'}).reset_index()
+    
+    # Step 4: Sort months properly
+    monthly_balance['Payment_Month'] = pd.Categorical(monthly_balance['Payment_Month'],categories=month_order,ordered=True)
+    monthly_balance = monthly_balance.sort_values('Payment_Month')
+    
+    # Step 5: Bar chart for Credit Card Balance
+    fig9 = px.bar(monthly_balance,x='Payment_Month',y='Credit_Card_Balance',text='Credit_Card_Balance',title="Monthly Credit Card Balance vs Credit Limit")
+    
+    fig9.update_traces(texttemplate='%{text:,.0f}',textposition='outside',textfont_size=12,name='Credit Card Balance')
+    
+    # Step 6: Add Credit Limit line chart
+    fig9.add_scatter(x=monthly_balance['Payment_Month'],y=monthly_balance['Credit_Limit'],mode='lines+markers+text',name='Credit Limit',
+        text=monthly_balance['Credit_Limit'],textposition='top center',texttemplate='%{text:,.0f}')
+    
+    # Step 7: Layout styling
+    fig9.update_layout(xaxis_title='Month',yaxis_title='Amount (₹)',title_font_size=20,legend_title_text='Metric',height=550)
+    
+    # Step 8: Show chart
+    st.plotly_chart(fig9, use_container_width=True)
+
