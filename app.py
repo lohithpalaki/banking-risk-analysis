@@ -28,7 +28,7 @@ if not st.session_state.logged_in:
 # Load dataset
 file_path = "Comprehensive_Banking_Database_ main.csv"  # Ensure this CSV is available in your environment
 df = pd.read_csv(file_path)
-df.columns = df.columns.str.strip().str.replace(' ', '_').str.replace('/', '_')
+df.columns = df.columns.str.strip().str.replace(' ', '').str.replace('/', '')
 
 # Sidebar Navigation
 st.sidebar.title("Navigation")
@@ -66,8 +66,9 @@ if section == "Customer Demographics & Overview":
     x=age_group_counts.index, 
     y=age_group_counts.values,
     labels={'x': 'Age Group', 'y': 'Count of Customers'},
-    title="Age Group wise Number of Customers")
-    
+    title="Age Group wise Number of Customers",
+    text=age_group_counts.values)
+    fig2.update_traces(textposition='outside', textfont_size=12)
     st.plotly_chart(fig2, use_container_width=True)
 
     # City-wise bar chart
@@ -79,8 +80,9 @@ if section == "Customer Demographics & Overview":
     y='City', 
     orientation='h', 
     title="Count of Customers by City",
+    text='Count',
     height=900 )
-  
+    fig3.update_traces(textposition='outside', textfont_size=12)
     st.plotly_chart(fig3, use_container_width=True)
 
 # 2. Accounts & Loan Analysis
@@ -111,9 +113,9 @@ elif section == "Accounts & Loan Analysis":
     loan_year_count = filtered_df.groupby('Loan_Year')['Loan_ID'].count().reset_index()
     
     # Plot
-    fig = px.line(loan_year_count,x='Loan_Year',y='Loan_ID',markers=True,title="Timely Count of Loans")
+    fig = px.line(loan_year_count,x='Loan_Year',y='Loan_ID',text='Loan_ID',markers=True,title="Timely Count of Loans")
     
-    
+    fig.update_traces(textposition='top center',texttemplate='%{text:.0f}',marker=dict(size=8))
     fig.update_layout(yaxis_title='Number of Loans',xaxis_title='Year',xaxis=dict(dtick=1))
     
     st.plotly_chart(fig, use_container_width=True)
@@ -122,9 +124,9 @@ elif section == "Accounts & Loan Analysis":
     loan_term_count = df['Loan_Term'].value_counts().sort_index().reset_index()
     loan_term_count.columns = ['Loan_Term', 'Count']
     
-    fig5 = px.bar(loan_term_count, x='Loan_Term', y='Count',title="Loan Term wise Loans Count")
+    fig5 = px.bar(loan_term_count, x='Loan_Term', y='Count',text='Count',title="Loan Term wise Loans Count")
     
-    
+    fig5.update_traces(textposition='outside',texttemplate='%{text:.0f}')
     fig5.update_layout(yaxis_title='Number of Loans',xaxis_title='Loan Term (months)')
     
     st.plotly_chart(fig5, use_container_width=True)
@@ -152,9 +154,10 @@ elif section == "Transaction & Financial Analysis":
     txn_month = txn_month.sort_values('Month')
 
     # 📈 Line Chart: Monthly Transaction Trends
-    fig6 = px.line(txn_month,x='Month',y='Count',markers=True,title="Timely Trend of Transactions")
+    fig6 = px.line(txn_month,x='Month',y='Count',text='Count',markers=True,title="Timely Trend of Transactions")
 
-    
+    fig6.update_traces(textposition='top center',texttemplate='%{text:,}',marker=dict(size=8))
+
     fig6.update_layout(xaxis_title='Month',yaxis_title='Number of Transactions',height=500)
 
     st.plotly_chart(fig6, use_container_width=True)
@@ -163,9 +166,9 @@ elif section == "Transaction & Financial Analysis":
     txn_type_count = df['Transaction_Type'].value_counts().reset_index()
     txn_type_count.columns = ['Transaction_Type', 'Count']
 
-    fig7 = px.bar(txn_type_count,x='Transaction_Type',y='Count',title="Transaction Type Count")
+    fig7 = px.bar(txn_type_count,x='Transaction_Type',y='Count',text='Count',title="Transaction Type Count")
 
-   
+    fig7.update_traces(textposition='outside',texttemplate='%{text:,}',textfont_size=12)
 
     fig7.update_layout(xaxis_title='Transaction Type',yaxis_title='Count',height=500)
 
@@ -206,9 +209,17 @@ elif section == "Credit Card Analysis":
         monthly_min_due,
         x='Payment_Month',
         y='Minimum_Payment_Due',
-        title="Monthly Minimum Payment Due")
+        title="Monthly Minimum Payment Due",
+        text='Minimum_Payment_Due'
+    )
     
-    
+    # Format data labels and layout
+    fig.update_traces(
+        texttemplate='%{text:,.2f}',  # Comma separator, 2 decimals
+        textposition='outside',
+        textfont_size=12,
+        marker_color='lightskyblue'
+    )
     
     fig.update_layout(
         xaxis_title='Month',
@@ -242,16 +253,16 @@ elif section == "Credit Card Analysis":
     monthly_balance = monthly_balance.sort_values('Payment_Month')
     
     # Step 5: Bar chart for Credit Card Balance
-    fig9 = px.bar(monthly_balance,x='Payment_Month',y='Credit_Card_Balance',title="Monthly Credit Card Balance vs Credit Limit")
+    fig9 = px.bar(monthly_balance,x='Payment_Month',y='Credit_Card_Balance',text='Credit_Card_Balance',title="Monthly Credit Card Balance vs Credit Limit")
     
-   
+    fig9.update_traces(texttemplate='%{text:,.0f}',textposition='outside',textfont_size=12,name='Credit Card Balance')
     
     # Step 6: Add Credit Limit line chart
-    fig9.add_scatter(x=monthly_balance['Payment_Month'],y=monthly_balance['Credit_Limit'],mode='lines+markers+text',name='Credit Limit')
+    fig9.add_scatter(x=monthly_balance['Payment_Month'],y=monthly_balance['Credit_Limit'],mode='lines+markers+text',name='Credit Limit',
+        text=monthly_balance['Credit_Limit'],textposition='top center',texttemplate='%{text:,.0f}')
     
     # Step 7: Layout styling
     fig9.update_layout(xaxis_title='Month',yaxis_title='Amount (₹)',title_font_size=20,legend_title_text='Metric',height=550)
     
     # Step 8: Show chart
     st.plotly_chart(fig9, use_container_width=True)
-
